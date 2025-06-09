@@ -123,6 +123,11 @@ function Menyu() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Debug connection status
+  useEffect(() => {
+    console.log('Connection status changed:', isConnected);
+  }, [isConnected]);
+
   const filteredDishes = selectedCategory === "Barchasi" 
     ? dishes 
     : dishes.filter(dish => 
@@ -163,10 +168,39 @@ function Menyu() {
   return (
     <div className="menyu-container">
       {/* Connection Status & Sticky Navigation */}
-      <div className="sticky-nav fixed">
-        <div className="connection-status">
-          <div className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`}></div>
-          <span className="connection-text">
+      <div className="sticky-nav fixed" style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        backgroundColor: 'white',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        padding: '16px'
+      }}>
+        <div className="connection-status" style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '8px 16px',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '4px',
+          marginBottom: '8px',
+          border: '1px solid #e0e0e0'
+        }}>
+          <div 
+            className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`}
+            style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              marginRight: '8px',
+              backgroundColor: isConnected ? '#22c55e' : '#ef4444'
+            }}
+          ></div>
+          <span className="connection-text" style={{
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
             {isConnected ? 'Ulangan' : 'Ulanmagan'}
           </span>
         </div>
@@ -196,7 +230,9 @@ function Menyu() {
 
       {/* Menu Section */}
       {view === "menu" && (
-        <section className={`menu-section ${isSticky ? 'with-margin' : ''}`}>
+        <section className={`menu-section ${isSticky ? 'with-margin' : ''}`} style={{
+          marginTop: '120px' // Sticky nav uchun joy qoldirish
+        }}>
           <div className="menu-container">
             <h2 className="menu-title">
               Bizning Menyu
@@ -222,19 +258,19 @@ function Menyu() {
                           e.target.src = '/api/placeholder/300/200';
                         }}
                       />
+                    </div>
+                    
+                    <div className="dish-content">
                       <div className="dish-price-badge">
                         <span className="dish-price">
                           {dish.price ? `${parseInt(dish.price).toLocaleString()} so'm` : 'Narx so\'raladi'}
                         </span>
                       </div>
-                    </div>
-                    
-                    <div className="dish-content">
                       <h3 className="dish-name">
                         {dish.name || 'Nomi ko\'rsatilmagan'}
                       </h3>
                       <div className="dish-meta">
-                        {dish.date && dish.date !== "" && (
+                        {(dish.date !== null && dish.date !== undefined && dish.date !== "") && (
                           <span className="dish-meta-item">
                             <Clock size={16} /> {dish.date} daqiqa
                           </span>

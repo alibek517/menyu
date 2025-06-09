@@ -7,10 +7,10 @@
     /* CSS Variables for Dynamic Theming */
     :root {
     /* Primary Colors */
-    --primary-orange: #ff6b35;
-    --primary-red: #e63946;
-    --primary-yellow: #f77f00;
-    --primary-gradient: linear-gradient(135deg, #ff6b35 0%, #e63946 50%, #f77f00 100%);
+    --primary-orange: #ff3c35;
+    --primary-red: #ff1c2f;
+    --primary-yellow: #ff1306;
+    --primary-gradient: linear-gradient(135deg, #ff0606 0%, #ff0015 50%, #ff0d0d 100%);
     
     /* Neutral Colors */
     --white: #ffffff;
@@ -747,8 +747,8 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    font-weight: 700;
-    font-size: var(--font-size-sm);
+    font-weight: bold;
+    font-size: 20px;
     }
 
     .dish-content {
@@ -1213,3 +1213,412 @@
       background: rgba(255, 255, 255, 0.98);
     }
   }
+  /* Dish Price Responsive Styles */
+
+/* Base price styles */
+.dish-price {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.2;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: -0.025em;
+  transition: all 0.3s ease;
+}
+
+/* Price badge container */
+.dish-price-badge {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  min-width: fit-content;
+}
+
+.dish-price-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Fallback for browsers that don't support background-clip */
+@supports not (-webkit-background-clip: text) {
+  .dish-price {
+    background: none;
+    color: #ff3c35;
+    text-shadow: 0 1px 2px rgba(255, 60, 53, 0.2);
+  }
+}
+
+/* Mobile First - Very Small (300px - 359px) */
+@media (max-width: 359px) {
+  .dish-price {
+    font-size: 0.75rem; /* 12px */
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-sm);
+    right: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    min-width: auto;
+    max-width: calc(100% - 1.5rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}
+
+/* Small Mobile (360px - 479px) */
+@media (min-width: 360px) and (max-width: 479px) {
+  .dish-price {
+    font-size: 0.813rem; /* 13px */
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-sm);
+    right: var(--space-sm);
+    padding: var(--space-xs) var(--space-md);
+    min-width: auto;
+    max-width: calc(100% - 1.75rem);
+  }
+}
+
+/* Medium Mobile (480px - 639px) */
+@media (min-width: 480px) and (max-width: 639px) {
+  .dish-price {
+    font-size: 0.875rem; /* 14px */
+    font-weight: 650;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-md);
+    right: var(--space-md);
+    padding: var(--space-xs) var(--space-md);
+  }
+}
+
+/* Large Mobile (640px - 767px) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .dish-price {
+    font-size: 1rem; /* 16px */
+    font-weight: 675;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-md);
+    right: var(--space-md);
+    padding: var(--space-sm) var(--space-lg);
+  }
+}
+
+/* Tablet Portrait (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .dish-price {
+    font-size: 1.125rem; /* 18px */
+    font-weight: 700;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-lg);
+    right: var(--space-lg);
+    padding: var(--space-md) var(--space-xl);
+  }
+}
+
+/* Tablet Landscape & Small Desktop (1024px - 1279px) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .dish-price {
+    font-size: 1.25rem; /* 20px */
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-xl);
+    right: var(--space-xl);
+    padding: var(--space-md) var(--space-xl);
+  }
+}
+
+/* Desktop (1280px - 1535px) */
+@media (min-width: 1280px) and (max-width: 1535px) {
+  .dish-price {
+    font-size: 1.375rem; /* 22px */
+    font-weight: 750;
+    letter-spacing: -0.025em;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-xl);
+    right: var(--space-xl);
+    padding: var(--space-md) var(--space-2xl);
+  }
+}
+
+/* Large Desktop (1536px - 1919px) */
+@media (min-width: 1536px) and (max-width: 1919px) {
+  .dish-price {
+    font-size: 1.5rem; /* 24px */
+    font-weight: 750;
+    letter-spacing: -0.03em;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-xl);
+    right: var(--space-xl);
+    padding: var(--space-lg) var(--space-2xl);
+  }
+}
+
+/* Ultra Wide (1920px+) */
+@media (min-width: 1920px) {
+  .dish-price {
+    font-size: 1.625rem; /* 26px */
+    font-weight: 800;
+    letter-spacing: -0.035em;
+  }
+  
+  .dish-price-badge {
+    top: var(--space-2xl);
+    right: var(--space-2xl);
+    padding: var(--space-lg) var(--space-3xl);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .dish-price {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Landscape orientation adjustments for small screens */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 900px) {
+  .dish-price-badge {
+    top: var(--space-xs);
+    right: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+  }
+  
+  .dish-price {
+    font-size: 0.75rem;
+  }
+}
+
+/* Extra narrow screens (300px and below compatibility) */
+@media (max-width: 300px) {
+  .dish-price {
+    font-size: 0.7rem; /* 11px */
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+  
+  .dish-price-badge {
+    top: 6px;
+    right: 6px;
+    padding: 4px 8px;
+    max-width: calc(100% - 12px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 12px;
+  }
+}
+
+/* For very wide screens */
+@media (min-width: 2560px) {
+  .dish-price {
+    font-size: 1.875rem; /* 30px */
+    font-weight: 800;
+  }
+  
+  .dish-price-badge {
+    padding: var(--space-xl) var(--space-4xl);
+    border-radius: var(--radius-2xl);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .dish-price-badge {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(71, 85, 105, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .dish-price-badge:hover {
+    background: rgba(30, 41, 59, 0.95);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .dish-price-badge {
+    transition: none;
+  }
+  
+  .dish-price-badge:hover {
+    transform: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .dish-price {
+    background: none;
+    color: #000;
+    font-weight: 800;
+  }
+  
+  .dish-price-badge {
+    background: #fff;
+    border: 2px solid #000;
+    box-shadow: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .dish-price {
+    background: none;
+    color: #000;
+    font-weight: 700;
+  }
+  
+  .dish-price-badge {
+    position: static;
+    background: transparent;
+    border: 1px solid #000;
+    box-shadow: none;
+    backdrop-filter: none;
+    padding: 2px 8px;
+    margin: 4px 0;
+    display: inline-block;
+  }
+}
+
+/* Accessibility enhancements */
+.dish-price-badge:focus-within {
+  outline: 2px solid var(--primary-orange);
+  outline-offset: 2px;
+}
+
+/* Animation for price updates (if needed) */
+@keyframes priceUpdate {
+  0% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+  50% { 
+    transform: scale(1.1); 
+    opacity: 0.8; 
+  }
+  100% { 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+.dish-price.updating {
+  animation: priceUpdate 0.5s ease-in-out;
+}
+
+/* Hover effects for interactive states */
+.dish-card:hover .dish-price-badge {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(255, 107, 53, 0.25);
+}
+
+/* Prevent hover effects on touch devices for small screens */
+@media (max-width: 767px) and (hover: none) {
+  .dish-card:hover .dish-price-badge {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .dish-price-badge:hover {
+    transform: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Loading state for price */
+.dish-price.loading {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  color: transparent;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Error state for price */
+.dish-price.error {
+  background: none;
+  color: #ef4444;
+  font-style: italic;
+}
+
+/* Currency symbol styling */
+.dish-price .currency {
+  font-size: 0.85em;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+/* Number formatting for large prices */
+.dish-price .price-number {
+  font-variant-numeric: tabular-nums;
+}
+
+/* RTL language support */
+[dir="rtl"] .dish-price-badge {
+  right: auto;
+  left: var(--space-lg);
+}
+
+@media (max-width: 479px) {
+  [dir="rtl"] .dish-price-badge {
+    left: var(--space-md);
+  }
+}
+
+@media (max-width: 359px) {
+  [dir="rtl"] .dish-price-badge {
+    left: var(--space-sm);
+  }
+}
+
+@media (max-width: 300px) {
+  [dir="rtl"] .dish-price-badge {
+    left: 6px;
+  }
+}
