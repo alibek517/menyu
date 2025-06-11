@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Clock, Tag, AlertCircle, Loader2 } from 'lucide-react';
+import { Clock, Tag, AlertCircle, Loader2, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import io from "socket.io-client";
 import "./menyu.css"
 
@@ -17,81 +17,163 @@ function Menyu() {
 
   const API_BASE = "https://suddocs.uz";
 
-  // Socket.IO connection
+  // Socket.IO ulanishi
   useEffect(() => {
+    console.log('Socket ulanishini boshlash...');
+    
     const newSocket = io(API_BASE, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionAttempts: 5,
       timeout: 20000,
+      autoConnect: true,
     });
 
+    // Ulanish hodisalari
     newSocket.on('connect', () => {
-      console.log('Socket connected:', newSocket.id);
+      console.log('✅ Socket ulandi:', newSocket.id);
       setIsConnected(true);
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
+    newSocket.on('disconnect', (reason) => {
+      console.log('❌ Socket uzildi:', reason);
       setIsConnected(false);
     });
 
-    // Listen for product updates
-    newSocket.on('productUpdate', (updatedProduct) => {
-      console.log('Product updated:', updatedProduct);
-      setDishes(prevDishes => 
-        prevDishes.map(dish => 
-          dish.id === updatedProduct.id ? updatedProduct : dish
-        )
-      );
+    newSocket.on('connect_error', (error) => {
+      console.error('🔴 Socket ulanish xatosi:', error);
+      setIsConnected(false);
     });
 
-    // Listen for new products
-    newSocket.on('newProduct', (newProduct) => {
-      console.log('New product added:', newProduct);
-      setDishes(prevDishes => [...prevDishes, newProduct]);
-      
-      // Update categories if new category is added
-      if (newProduct.category && 
-          !categories.some(cat => cat.id === newProduct.category.id)) {
-        setCategories(prevCategories => [...prevCategories, newProduct.category]);
-      }
+    // BARCHA eventlarni tinglash - serverdan qanday eventlar kelayotganini bilish uchun
+    newSocket.onAny((eventName, ...args) => {
+      console.log('📡 Kelgan event:', eventName, args);
     });
 
-    // Listen for product deletion
-    newSocket.on('productDeleted', (productId) => {
-      console.log('Product deleted:', productId);
-      setDishes(prevDishes => 
-        prevDishes.filter(dish => dish.id !== productId)
-      );
-    });
+    // Turli xil event nomlarini sinab ko'rish
+    const eventNames = [
+      'productUpdate',
+      'newProduct', 
+      'productDeleted',
+      'categoryUpdate',
+      'product_created',
+      'product_updated', 
+      'product_deleted',
+      'menu_updated',
+      'data_changed',
+      'refresh'
+    ];
 
-    // Listen for category updates
-    newSocket.on('categoryUpdate', (updatedCategories) => {
-      console.log('Categories updated:', updatedCategories);
-      setCategories(updatedCategories);
+    eventNames.forEach(eventName => {
+      newSocket.on(eventName, (data) => {
+        console.log(`🔔 ${eventName} eventi keldi:`, data);
+        
+        // Har qanday yangi mahsulot eventida yangilash
+        if (eventName.includes('product') || eventName.includes('new') || eventName.includes('created')) {
+          if (data && (data.id || data.product)) {
+            const product = data.product || data;
+            console.log('➕ Yangi mahsulot qo\'shilmoqda:', product);
+            
+            setDishes(prevDishes => {
+              const exists = prevDishes.find(dish => dish.id === product.id);
+              if (exists) return prevDishes;
+              
+              const newDishes = [...prevDishes, product];
+              console.log('✅ Yangi taom qo\'shildi. Jami:', newDishes.length);
+              return newDishes;
+            });
+
+            // Kategoriya yangilash
+            if (product.category) {
+              setCategories(prevCategories => {
+                const exists = prevCategories.find(cat => cat.id === product.category.id);
+                if (!exists) {
+                  return [...prevCategories, product.category];
+                }
+                return prevCategories;
+              });
+            }
+          }
+        }
+
+        // Yangilanish eventlari
+        if (eventName.includes('update') && data && data.id) {
+          console.log('🔄 Mahsulot yangilanmoqda:', data);
+          setDishes(prevDishes => 
+            prevDishes.map(dish => dish.id === data.id ? data : dish)
+          );
+        }
+
+        // O'chirish eventlari
+        if (eventName.includes('delet') && data) {
+          const productId = data.id || data;
+          console.log('🗑️ Mahsulot o\'chirilmoqda:', productId);
+          setDishes(prevDishes => 
+            prevDishes.filter(dish => dish.id !== productId)
+          );
+        }
+
+        // Umumiy yangilanish
+        if (eventName.includes('refresh') || eventName.includes('menu_updated')) {
+          console.log('🔄 Umumiy yangilanish - ma\'lumotlarni qayta yuklash');
+          // Sahifani yangilamasdan ma'lumotlarni qayta yuklash
+          fetchProductsAgain();
+        }
+      });
     });
 
     setSocket(newSocket);
 
+    // Cleanup
     return () => {
+      console.log('Socket yopilmoqda...');
       newSocket.close();
     };
   }, [API_BASE]);
 
+  // Ma'lumotlarni qayta yuklash funksiyasi
+  const fetchProductsAgain = async () => {
+    try {
+      console.log('🔄 Ma\'lumotlar qayta yuklanmoqda...');
+      const response = await fetch(`${API_BASE}/product`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Yangi ma\'lumotlar yuklandi:', data.length, 'ta taom');
+        setDishes(data);
+        
+        // Kategoriyalarni yangilash
+        const uniqueCategories = data
+          .filter(dish => dish.category)
+          .map(dish => dish.category)
+          .filter((category, index, self) => 
+            self.findIndex(c => c.id === category.id) === index
+          );
+        setCategories(uniqueCategories);
+      }
+    } catch (error) {
+      console.error('❌ Qayta yuklashda xatolik:', error);
+    }
+  };
+
+  // Boshlang'ich ma'lumotlarni yuklash
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        console.log('API dan ma\'lumotlar yuklanmoqda...');
         setLoading(true);
+        
         const response = await fetch(`${API_BASE}/product`);
         if (!response.ok) {
           throw new Error('Ma\'lumotlarni yuklashda xatolik');
         }
+        
         const data = await response.json();
+        console.log('API dan kelgan ma\'lumotlar:', data.length, 'ta taom');
         
         setDishes(data);
         
+        // Kategoriyalarni ajratib olish
         const uniqueCategories = data
           .filter(dish => dish.category) 
           .map(dish => dish.category)
@@ -99,18 +181,21 @@ function Menyu() {
             self.findIndex(c => c.id === category.id) === index
           );
         
+        console.log('Topilgan kategoriyalar:', uniqueCategories.length);
         setCategories(uniqueCategories);
+        
       } catch (err) {
+        console.error('❌ API xatosi:', err);
         setError(err.message);
-        console.error('API Error:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [API_BASE]);
 
+  // Scroll hodisasi
   useEffect(() => {
     const handleScroll = () => {
       if (heroRef.current) {
@@ -123,16 +208,19 @@ function Menyu() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Debug connection status
-  useEffect(() => {
-    console.log('Connection status changed:', isConnected);
-  }, [isConnected]);
-
+  // Filtrlangan taomlar
   const filteredDishes = selectedCategory === "Barchasi" 
     ? dishes 
     : dishes.filter(dish => 
         dish.category && dish.category.name === selectedCategory
       );
+
+  console.log('Hozirgi holat:', {
+    jami_taomlar: dishes.length,
+    filtrlangan_taomlar: filteredDishes.length,
+    tanlangan_kategoriya: selectedCategory,
+    wifi_ulangan: isConnected
+  });
 
   if (loading) {
     return (
@@ -167,7 +255,7 @@ function Menyu() {
 
   return (
     <div className="menyu-container">
-      {/* Connection Status & Sticky Navigation */}
+      {/* Sticky Navigation */}
       <div className="sticky-nav fixed" style={{
         position: 'fixed',
         top: 0,
@@ -178,33 +266,57 @@ function Menyu() {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         padding: '16px'
       }}>
+        {/* WiFi holati */}
         <div className="connection-status" style={{
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '8px 16px',
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
           borderRadius: '4px',
           marginBottom: '8px',
           border: '1px solid #e0e0e0'
         }}>
-          <div 
-            className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`}
-            style={{
-              width: '10px',
-              height: '10px',
-              borderRadius: '50%',
-              marginRight: '8px',
-              backgroundColor: isConnected ? '#22c55e' : '#ef4444'
-            }}
-          ></div>
-          <span className="connection-text" style={{
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            {isConnected ? 'Ulangan' : 'Ulanmagan'}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {isConnected ? (
+              <Wifi size={16} color="#22c55e" style={{ marginRight: '8px' }} />
+            ) : (
+              <WifiOff size={16} color="#ef4444" style={{ marginRight: '8px' }} />
+            )}
+            <span style={{ fontSize: '14px', fontWeight: '500' }}>
+              WiFi: {isConnected ? 'Ulangan' : 'Uzilgan'}
+            </span>
+          </div>
+          
+          <div>
+            <button 
+              onClick={() => {
+                fetchProductsAgain();
+                if (socket) {
+                  socket.disconnect();
+                  socket.connect();
+                }
+              }}
+              style={{
+                padding: '6px 12px',
+                fontSize: '14px',
+                backgroundColor: '#3b82f6',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <RefreshCw size={14} /> Yangilash
+            </button>
+          </div>
         </div>
         
+        {/* Kategoriya tugmalari */}
         {view === "menu" && (
           <div className="nav-content">
             <div className="nav-buttons">
@@ -228,22 +340,25 @@ function Menyu() {
         )}
       </div>
 
-      {/* Menu Section */}
+      {/* Menyu */}
       {view === "menu" && (
         <section className={`menu-section ${isSticky ? 'with-margin' : ''}`} style={{
-          marginTop: '120px' // Sticky nav uchun joy qoldirish
+          marginTop: '120px'
         }}>
           <div className="menu-container">
-            <h2 className="menu-title">
-              Bizning Menyu
-            </h2>
+            <h2 className="menu-title">Bizning Menyu</h2>
             
             {filteredDishes.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">
-                  <Loader2 size={24} className="animate-spin" />
+                  <Loader2 size={24} />
                 </div>
-                <p className="empty-text">Hozircha bu kategoriyada taom mavjud emas</p>
+                <p className="empty-text">
+                  {selectedCategory === "Barchasi" 
+                    ? "Hech qanday taom topilmadi"
+                    : `"${selectedCategory}" da hech qanday taom yo'q`
+                  }
+                </p>
               </div>
             ) : (
               <div className="menu-grid">
