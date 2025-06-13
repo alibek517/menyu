@@ -15,7 +15,7 @@ function Menyu() {
   const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const API_BASE = "https://suddocs.uz";
+  const API_BASE = "https://alikafecrm.uz";
 
   // Socket.IO ulanishi
   useEffect(() => {
